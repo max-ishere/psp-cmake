@@ -1,0 +1,100 @@
+#+title: CMake on Sony PSP template repository
+
+#+description: You can use this repository to make your Sony PSP CMake projects.
+
+* Project tree
+
+#+begin_src text
+.
+├── CMakeLists.txt
+├── build/
+├── include/
+└── src/
+    └── CMakeLists.txt
+#+end_src
+
+** src/
+
+A directory for ~*.cpp~ files. By default it will contain ~CMakeLists.txt~ with template code to build ~main.cpp~.
+
+** include/
+
+Default directory to put your headers into. It's best to create a directory there with the name of your project because this would be the include you can use: ~#include <project/header.hpp>~. Your code will be more portable and you will omit various header name collissions.
+
+** build/
+
+Used for all sorts of temporary files. ~EBOOT.PBP~ lives there under ~build/src/path/~, where ~path~ is path to ~CMakeLists.txt~ that has ~add_executable()~ in it.
+
+* Building
+
+** Preparing CMakeLists.txt
+
+1. Add an executable in one of sub-directories of ~src/~.
+
+#+begin_src CMake
+add_executable(psp main.cpp)
+#+end_src
+
+2. Link PSP libraries and any auxilary ones.
+
+#+begin_src CMake
+target_link_libraries(psp PRIVATE ${PSP_LIBRARIES})
+#+end_src
+
+3. Create ~EBOOT.PBP~.
+
+#+begin_src CMake
+create_pbp_file(TARGET psp TITLE "${CMAKE_PROJECT_NAME}"
+  # ICON_PATH
+  # BACKGROUND_PATH
+  # PREVIEW_PATH
+  )
+#+end_src
+
+Here we create an ~EBOOT.PBP~ from target ~psp~ with the same title as the project. You can replace ~"${CMAKE_PROJECT_NAME}"~ with any other string that PSP will accept and display. If title is not specified it will be set to ~NULL~.
+
+** Initialising CMake in build directory
+
+First we need to initialise CMake properly. If you have anything in ~build/~ before first initialisation - remove it.
+
+#+begin_src bash
+psp-cmake -S . -B build/
+#+end_src
+
+** Building
+
+Same as any other cmake project with:
+
+#+begin_src bash
+# in project root:
+cmake --build build/
+#+end_src
+
+The output should be something like this:
+
+#+begin_src text
+[ 50%] Building CXX object src/CMakeFiles/psp.dir/main.cpp.obj
+[100%] Linking CXX executable psp
+Not stripping binary, build type is .
+Creating psp_artifact directory.
+Copying ELF to psp_arfitact directory.
+Calling psp-fixup-imports
+Calling mksfoex
+Calling pack-pbp
+[0]        316 bytes | PARAM.SFO
+[1]          0 bytes | NULL
+[2]          0 bytes | NULL
+[3]          0 bytes | NULL
+[4]          0 bytes | NULL
+[5]          0 bytes | NULL
+[6]     457844 bytes | /mnt/d/psp/cmake/build/src/psp_artifact/psp
+[7]          0 bytes | NULL
+EBOOT.PBP file created.
+[100%] Built target psp
+#+end_src
+
+* How it works (very over simplified)
+
+~psp-cmake~ passes a toolchain file at first build configuration and sets up a compiler, link and include paths. This step is important because without a propper compiler, linker, etc you would not be able to create a executable target for ~EBOOT.PBP~.
+
+Upon build macro ~create_pbp_file()~ parses arguments you give it looking for keywords such as ~TARGET~ ~ICON_PATH~ ~BACKGROUND_PATH~ ~PREVIEW_PATH~. Following a keyword text is argument with such keyword name.
