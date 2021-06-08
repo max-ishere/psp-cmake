@@ -29,19 +29,19 @@ Used for all sorts of temporary files. ~EBOOT.PBP~ lives there under ~build/src/
 
 ** Preparing CMakeLists.txt
 
-1. Add an executable in one of sub-directories of ~src/~.
+- Add an executable in one of sub-directories of ~src/~.
 
 #+begin_src CMake
 add_executable(psp main.cpp)
 #+end_src
 
-2. Link PSP libraries and any auxilary ones.
+- Link PSP libraries and any auxilary ones.
 
 #+begin_src CMake
 target_link_libraries(psp PRIVATE ${PSP_LIBRARIES})
 #+end_src
 
-3. Create ~EBOOT.PBP~.
+- Create ~EBOOT.PBP~.
 
 #+begin_src CMake
 create_pbp_file(TARGET psp TITLE "${CMAKE_PROJECT_NAME}"
